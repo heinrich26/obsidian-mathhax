@@ -1,0 +1,28 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+mjx-math mjx-merror {
+    border-radius: var(--code-radius);
+
+    & > mjx-mtext {   
+        font-size: var(--font-text-size);
+
+        & > mjx-utext {
+            font-family: var(--font-monospace);
+            font-size: var(--code-size) !important;
+
+            /* Styling to look more like inline code */
+            display: inline;
+            line-height: var(--line-height-normal);
+            padding: 0.15em 0.3em;
+            border-radius: var(--code-radius);
+            border-width: var(--code-border-width);
+        }
+    }
+}

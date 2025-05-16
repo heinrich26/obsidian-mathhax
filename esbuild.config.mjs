@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import process from "process";
 import { config } from "dotenv";
 import builtins from "builtin-modules";
+import { sassPlugin } from 'esbuild-sass-plugin'
 
 config();
 
@@ -20,7 +21,7 @@ const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	entryPoints: ["main.ts"],
+	entryPoints: ["ts/styles.scss", "ts/main.ts"],
 	bundle: true,
 	external: [
 		"obsidian",
@@ -37,6 +38,7 @@ const context = await esbuild.context({
 		"@lezer/highlight",
 		"@lezer/lr",
 		...builtins],
+	plugins: [sassPlugin()],
 	format: "cjs",
 	target: "es2020",
 	logLevel: "info",
