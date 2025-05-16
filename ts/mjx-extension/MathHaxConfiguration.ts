@@ -8,7 +8,8 @@ import { MATH_HAX } from '../main';
  */
 export function createMathHaxMap() {
 	new CommandMap(MATH_HAX, {
-		rnum: 'Rnum'
+		rnum: 'Rnum',
+		vecRange: 'VecRange',
 	}, MathHaxMethods);
 	return MATH_HAX;
 }

@@ -7,6 +7,10 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+body {
+    --font-mjx-text: var(--font-text);
+}
+
 mjx-math mjx-merror {
     border-radius: var(--code-radius);
 

@@ -188,5 +188,4 @@ export function createSIUnitxConfiguration(mjx: MathJax, settingsRef: any) {
     inputJax.configuration.add('siunitx', inputJax as unknown as TeX<any, any, any>, {
         siunitx: settingsRef.siunitx
     })
-
 }

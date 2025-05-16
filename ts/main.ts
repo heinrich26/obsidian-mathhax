@@ -6,15 +6,20 @@ import { MathJax } from './bindings';
 // import { PrioritizedList } from 'mathjax-full/ts/util/PrioritizedList';
 import { createSIUnitxConfiguration} from './siunitx/siunitx';
 import { IOptions } from './siunitx/options/options';
+import { TeX } from 'mathjax-full/ts/input/tex';
 
 
 interface MathHaxPluginSettings {
 	tagSide: 'left' | 'right',
+	loadPhysics: boolean,
+	useTextFont: boolean,
 	siunitx: Partial<IOptions>
 }
 
 const DEFAULT_SETTINGS: Partial<MathHaxPluginSettings> = {
 	tagSide: 'right',
+	loadPhysics: false,
+	useTextFont: false,
 	siunitx: {}
 };
 
@@ -31,8 +36,8 @@ export default class MathHaxPlugin extends Plugin {
 
 		// Check if MathJax is available
 		if (typeof window.MathJax !== 'undefined' && typeof window.MathJax.config !== 'undefined') {
-			console.log("MathHax Plugin was loaded!");
 			this.hijackMathJax(window.MathJax);
+			console.log("MathHax Plugin was loaded!");
 		} else {
 			console.warn("MathJax not loaded. Custom macros cannot be injected.");
 			// Optionally, listen for an event indicating MathJax availability (if applicable)
@@ -56,23 +61,41 @@ export default class MathHaxPlugin extends Plugin {
 
 
 		// Inject a Font into MathJax
-		const defaultView = document.defaultView;
-		if (defaultView) {
-			// We can inject our font
-			const fontStr = defaultView.getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--font-text")
-			const fonts = fontStr.split(/,\s?(?=(?:[^"']*["'][^"']*["'])*[^"']*$)/g);
-			mjx.startup.output.options.mtextFont = fonts[0];
-			mjx.startup.output.options.merrorFont = 'var(--font-monospace)';
-		}
+		this.handleCustomFont(mjx);
+		// The Error font should always be overriden
+		mjx.startup.output.options.merrorFont = 'var(--font-monospace)';
 
-		//
 		// Change Tag placement
-		//
-
-		// Pre-Init
 		this.updateTagSide(mjx);
 
+		// Inject custom macros
 		this.injectCustomMacros(mjx);
+
+		// Load physics if requested
+		this.handleLoadPhysics(mjx);
+	}
+
+	/**
+	 * Applies the custom font settings to MathJax.
+	 * 
+	 * @param mjx MathJax instance
+	 */
+	public handleCustomFont(mjx: MathJax = window.MathJax) {
+		mjx.startup.output.options.mtextFont = this.settings.useTextFont ? 'var(--font-mjx-text)' : '';
+	}
+
+	/**
+	 * Loads the `physics` extension into MathJax, if requested by `this.pluginSettings`.
+	 * 
+	 * @param mjx the MathJax instance
+	 */
+	public handleLoadPhysics(mjx: MathJax = window.MathJax) {
+		if (this.settings.loadPhysics) {
+			const inputJax = mjx.startup.input.first();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			inputJax.configuration.add('physics', inputJax as unknown as TeX<any, any, any>, {})
+		}
+		// unloading is not supported
 	}
 
 	/**

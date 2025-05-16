@@ -3,9 +3,8 @@
 	"name": "MathHax",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Extends some of the capabilities of MathJax.",
+	"description": "Extends the capabilities of Obsidians MathJax.",
 	"author": "heinrich26",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://github.com/heinrich26",
 	"isDesktopOnly": false
 }

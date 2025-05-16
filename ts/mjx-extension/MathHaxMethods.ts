@@ -4,11 +4,11 @@
  * @author heinrich26
  */
 
-import { ParseUtil, TexError } from '../bindings/input/tex';
+import { NewcommandUtil, ParseUtil, TexError, TexParser } from '../bindings/input/tex';
 import { TEXCLASS } from '../bindings/core/MmlTree';
 
 import { ParseMethod } from 'mathjax-full/ts/input/tex/Types';
-import TexParser from 'mathjax-full/ts/input/tex/TexParser';
+import TexParserImpl from 'mathjax-full/ts/input/tex/TexParser';
 
 import { romanize } from 'romans';
 
@@ -16,7 +16,7 @@ import { romanize } from 'romans';
 export const MathHaxMethods: Record<string, ParseMethod> = {};
 
 
-MathHaxMethods.Rnum = function (parser: TexParser, name: string) {
+MathHaxMethods.Rnum = function (parser: TexParserImpl, name: string) {
     let number: string;
 
     const s = ParseUtil.trimSpaces(parser.GetArgument(name));
@@ -32,4 +32,31 @@ MathHaxMethods.Rnum = function (parser: TexParser, name: string) {
 
     const mml = parser.create('token', 'mn', { texClass: TEXCLASS.ORD }, number);
     parser.Push(parser.itemFactory.create('fn', mml));
+} as ParseMethod;
+
+MathHaxMethods.VecRange = function (parser: TexParserImpl, name: string) {
+    let repeatS = ParseUtil.trimSpaces(parser.GetBrackets(name, '2'));
+    if (!repeatS.match(/^\d+$/) || repeatS == '0') throw new TexError('InvalidRepetitionNumber', 'Invalid integer: %1', repeatS);
+
+    const template = ParseUtil.trimSpaces(parser.GetArgument(name));
+    const upperBound = ParseUtil.trimSpaces(parser.GetArgument(name));
+
+    if (!upperBound.match(/^(\.\.\w+|\.\.\.\w+|\d+)$/) || upperBound == '0') {
+        throw new TexError('InvalidUpperBound', 'Invalid upper bound: %1', upperBound);
+    }
+
+    function f(index: string | number): string {
+        return template.replace('#1', `{${index}}`);
+    }
+    
+    let s = '';
+    if (upperBound.startsWith('..')) {
+        const end = upperBound.slice(upperBound.startsWith('...') ? 3 : 2);
+        s = `,\\dots,${f(end)}`;
+    } else {
+        repeatS = upperBound;
+    }
+    s = [...Array(parseInt(repeatS, 10)).keys()].map((_, i) => f(i+1)).join(',') + s;
+
+    parser.Push(new TexParser('\\left[' + s + '\\right]', parser.stack.env, parser.configuration).mml());
 } as ParseMethod;

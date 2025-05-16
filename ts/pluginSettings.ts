@@ -67,8 +67,12 @@ export class MathHaxSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName('Date format')
-            .setDesc('Default date format')
+            .setName('MathHax Settings')
+            .setHeading();
+
+        new Setting(containerEl)
+            .setName('Tag Side')
+            .setDesc('Choose the side of the equation to place the tag.')
             .addDropdown((dropdown) =>
                 dropdown.addOptions({
                     'left': 'Left',
@@ -76,12 +80,42 @@ export class MathHaxSettingTab extends PluginSettingTab {
                 })
                 .setValue(this.plugin.settings.tagSide)
                 .onChange(async (value) => {
-                    this.plugin.settings.tagSide = (value as any); // @ts-ignore
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this.plugin.settings.tagSide = value as any;
                     await this.plugin.saveSettings();
                 })
             );
 
+        new Setting(containerEl)
+            .setName('Load physics')
+            .setDesc('Loads the MathJax physics extension. Unloading requires a reload.')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.loadPhysics)
+                    .onChange(async (value) => {
+                        this.plugin.settings.loadPhysics = value;
+                        this.plugin.handleLoadPhysics();
+                        await this.plugin.saveSettings();
+                    })
+            );
         
+        new Setting(containerEl)
+            .setName('Use Text Font')
+            .setDesc(createFragment((frag) => (frag.createDiv().innerHTML = 'Use the Obsidian text-font for <code>\\text{...}</code>. A custom font can be set via <code>--font-mjx-text: ...</code>.')))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.useTextFont)
+                    .onChange(async (value) => {
+                        this.plugin.settings.useTextFont = value;
+                        this.plugin.handleCustomFont();
+                        await this.plugin.saveSettings();
+                    })
+            );
+
+        //
+        // SIUnitx settings
+        //
+
         new Setting(containerEl)
             .setName('SIUnitx Configuration')
             .setHeading();
@@ -125,7 +159,7 @@ export class MathHaxSettingTab extends PluginSettingTab {
                     s.addText((text) => { 
                         text
                             .setPlaceholder('number')
-                            .setValue((this.plugin.settings.siunitx as any)[key] ?? defaultValue)
+                            .setValue(((this.plugin.settings.siunitx as any)[key] ?? defaultValue).toString())
                             .onChange(async (value) => {
                                 // Validate the input as a number
                                 let numValue: number;
