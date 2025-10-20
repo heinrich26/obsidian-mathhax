@@ -34,7 +34,37 @@ MathHaxMethods.Rnum = function (parser: TexParserImpl, name: string) {
     parser.Push(parser.itemFactory.create('fn', mml));
 } as ParseMethod;
 
+MathHaxMethods.Series = function (parser: TexParserImpl, name: string) {
+    // template and separator are not trimmed, thus allowing them to interact with surrounding tokens
+    let repeatS = ParseUtil.trimSpaces(parser.GetBrackets(name, '2'));
+    if (!repeatS.match(/^\d+$/) || repeatS == '0') throw new TexError('InvalidRepetitionNumber', 'Invalid integer: %1', repeatS);
+
+    const template = parser.GetArgument(name);
+    const separator = parser.GetArgument(name);
+    const upperBound = ParseUtil.trimSpaces(parser.GetArgument(name));
+
+    if (!upperBound.match(/^(\.\.\w+|\.\.\.\w+|\d+)$/) || upperBound == '0') {
+        throw new TexError('InvalidUpperBound', 'Invalid upper bound: %1', upperBound);
+    }
+
+    function f(index: string | number): string {
+        return template.replace(/#1/g, `{${index}}`);
+    }
+    
+    let s = '';
+    if (upperBound.startsWith('..')) {
+        const end = upperBound.slice(upperBound.startsWith('...') ? 3 : 2);
+        s = `${separator}\\dots${separator}${f(end)}`;
+    } else {
+        repeatS = upperBound;
+    }
+    s = [...Array(parseInt(repeatS, 10)).keys()].map((_, i) => f(i+1)).join(separator) + s;
+
+    parser.Push(new TexParser(s, parser.stack.env, parser.configuration).mml());
+} as ParseMethod;
+
 MathHaxMethods.VecRange = function (parser: TexParserImpl, name: string) {
+    // same as Series, but with brackets around and default separator of comma
     let repeatS = ParseUtil.trimSpaces(parser.GetBrackets(name, '2'));
     if (!repeatS.match(/^\d+$/) || repeatS == '0') throw new TexError('InvalidRepetitionNumber', 'Invalid integer: %1', repeatS);
 
@@ -46,7 +76,7 @@ MathHaxMethods.VecRange = function (parser: TexParserImpl, name: string) {
     }
 
     function f(index: string | number): string {
-        return template.replace('#1', `{${index}}`);
+        return template.replace(/#1/g, `{${index}}`);
     }
     
     let s = '';
