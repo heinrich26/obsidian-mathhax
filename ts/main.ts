@@ -6,6 +6,7 @@ import { MathJax } from './bindings';
 // import { PrioritizedList } from 'mathjax-full/ts/util/PrioritizedList';
 import { createSIUnitxConfiguration} from './siunitx/siunitx';
 import { IOptions } from './siunitx/options/options';
+import { prefixSymbol } from './siunitx/units';
 import { TeX } from 'mathjax-full/ts/input/tex';
 
 
@@ -110,7 +111,11 @@ export default class MathHaxPlugin extends Plugin {
 		const handlers = mjx.startup.input.first()?.configuration.handlers
 		if (handlers === undefined) return // Input object hasn't been initialized
 		
+		// modify some SIUnitx settings here, instead of in the source,
+		prefixSymbol.set('micro', '\u00b5'); // we want the proper micro symbol, not "u"
+
 		createSIUnitxConfiguration(mjx, this.settings); // configuration should probably be created before adding the maps
+
 
 		handlers.get('macro').add([createMathHaxMap()], null, /* PrioritizedList.DEFAULTPRIORITY */ 5);
 		

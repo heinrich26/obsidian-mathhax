@@ -268,7 +268,7 @@ export function processQuantity(parser: TexParserImpl): void {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', numString);
-			numString = eval(expression).toString();
+			numString = window.eval(expression).toString();
 		}
 
 		// refresh global options from default

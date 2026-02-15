@@ -67,7 +67,7 @@ export function processQuantityProduct(parser: TexParserImpl): void {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
-			text= eval(expression).toString();
+			text= window.eval(expression).toString();
 		}
 
 		const numlist = parseProductList(parser, text, globalOptions);

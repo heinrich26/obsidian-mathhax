@@ -59,7 +59,7 @@ export function processNumberProduct(parser: TexParserImpl): void {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
-			const result = eval(expression);
+			const result = window.eval(expression);
 			text = result.toString();
 		}
 
